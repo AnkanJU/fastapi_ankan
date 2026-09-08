@@ -22,6 +22,7 @@ class TodoPatch(BaseModel):
 class TodoResponse(TodoBase):
     id: int
     completed: bool
+    owner_id: int
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -37,7 +38,7 @@ class UserResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-# --- TOKEN SCHEMAS (NEW) ---
+# --- TOKEN SCHEMAS ---
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
