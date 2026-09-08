@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from app.database import get_db
+from app.dependencies import get_current_active_user
 from app.models import DBUser
 from app.schemas import Token, UserCreate, UserResponse
 from app.utils import create_access_token, hash_password, verify_password
@@ -30,7 +31,6 @@ def register_user(user_in: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    # OAuth2 form sends credentials as 'username' and 'password'
     user = db.query(DBUser).filter(DBUser.email == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
@@ -39,6 +39,11 @@ def login_user(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = D
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Issue JWT token containing user email inside payload
     access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
+
+# --- PROTECTED ROUTE ---
+@router.get("/me", response_model=UserResponse)
+def read_current_user(current_user: DBUser = Depends(get_current_active_user)):
+    """Returns profile details for the currently authenticated user."""
+    return current_user
