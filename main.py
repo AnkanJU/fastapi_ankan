@@ -1,28 +1,27 @@
 import time
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.database import engine, Base
+from app.exceptions import TodoNotFoundException
 from app.routers import todos
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Phase 5 - Professional Structure")
+app = FastAPI(title="Phase 6 - Error Handling & Validation")
 
-# 1. CORS Configuration (New in Lesson 20)
-origins = [
-    "http://localhost:3000",      # Frontend dev server (React/Next.js)
-    "http://127.0.0.1:3000",
-]
+# Custom Exception Handler
+@app.exception_handler(TodoNotFoundException)
+async def todo_not_found_exception_handler(request: Request, exc: TodoNotFoundException):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "error_code": "TODO_NOT_FOUND",
+            "message": f"Todo item with ID {exc.todo_id} does not exist.",
+            "path": str(request.url)
+        },
+    )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],           # Allows GET, POST, PATCH, DELETE, etc.
-    allow_headers=["*"],           # Allows all headers
-)
-
-# 2. Custom Timing Middleware (Added in Lesson 19)
+# Custom Request Timing Middleware
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
     start_time = time.perf_counter()
@@ -31,9 +30,8 @@ async def add_process_time_header(request: Request, call_next):
     response.headers["X-Process-Time"] = f"{process_time:.2f}ms"
     return response
 
-# 3. Router Integration
 app.include_router(todos.router)
 
 @app.get("/")
 def root():
-    return {"message": "API running with modular structure!"}
+    return {"message": "Phase 6 - Error Handling & Validation API running!"}
