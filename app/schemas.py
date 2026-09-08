@@ -25,7 +25,7 @@ class TodoResponse(TodoBase):
 
     model_config = ConfigDict(from_attributes=True)
 
-# --- USER SCHEMAS (NEW) ---
+# --- USER SCHEMAS ---
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=6)
@@ -36,3 +36,11 @@ class UserResponse(BaseModel):
     is_active: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+# --- TOKEN SCHEMAS (NEW) ---
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+class TokenData(BaseModel):
+    email: str | None = None
