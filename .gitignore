@@ -1,0 +1,14 @@
+# Virtual Environment
+.venv/
+env/
+venv/
+
+# Byte-compiled / Python cache
+__pycache__/
+*.pyc
+
+# Local SQLite Database
+*.db
+
+# VS Code directory settings
+.vscode/
